@@ -1,0 +1,39 @@
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+from Bio import AlignIO
+from collections import Counter
+
+alignment_file = "C:\DNA_nucletidyltransferase\DNA_nucleotidyltransferase\TdT_Polymerase_Domain_Alignment_clustal_New.txt"
+
+alignment = AlignIO.read(alignment_file, 'clustal')
+position = 153
+
+
+residues_at_position = [record[position] for record in alignment]
+residue_counts = Counter(residues_at_position)
+
+data = {
+    'Amino Acid': list(residue_counts.keys()),
+    'Frequency': list(residue_counts.values())
+}
+
+df = pd.DataFrame(data)
+
+df_sorted = df.sort_values(by='Frequency', ascending=False)
+
+total_count = df_sorted['Frequency'].sum()
+df_sorted['Percent'] = (df_sorted['Frequency']/total_count)*100
+
+plt.figure(figsize=(10,6))
+
+ax = sns.barplot(x='Amino Acid', y='Frequency', data=df_sorted, palette='viridis')
+
+for i, v in enumerate(df_sorted['Frequency']):
+    ax.text(i, v, f"{v} ({df_sorted['Percent'].iloc[i]:.2f}%)", ha='center')
+    
+plt.title(f'Частота встречаемости аминокислотных остатков на {position+1} позиции (от большего к меньшему)')
+plt.xlabel('Аминокислота')
+plt.ylabel('Частота')
+plt.xticks(rotation=45)
+plt.show()
